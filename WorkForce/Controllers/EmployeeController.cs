@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -10,14 +11,14 @@ namespace WorkForce.Controllers
 {
     public class EmployeeController : Controller
     {
-        private const string BaseApi = "http://localhost:7075";
+        private const string BaseApi = "https://localhost:7075/";
 
         // GET: Employee
         public async Task<ActionResult> Index()
         {
             using (var httpClient = new HttpClient())
             {
-               httpClient.BaseAddress = new System.Uri( "https://localhost:7075/");
+               httpClient.BaseAddress = new System.Uri(BaseApi);
                httpClient.DefaultRequestHeaders.Clear();
                 httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 var response = await httpClient.GetAsync("api/employees");
@@ -62,18 +63,47 @@ namespace WorkForce.Controllers
 
         // POST: Employee/Create
         [HttpPost]
-        public ActionResult Create(FormCollection collection)
+        public async Task<ActionResult> Create(Employee employee)
         {
             try
             {
-                // TODO: Add insert logic here
+                using (var httpClient = new HttpClient())
+                {
+                    httpClient.BaseAddress = new Uri(BaseApi);
+                    httpClient.DefaultRequestHeaders.Clear();
+                    httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-                return RedirectToAction("Index");
+                    // Serialize the employee object to JSON
+                    var jsonContent = JsonConvert.SerializeObject(employee);
+                    var content = new StringContent(jsonContent, System.Text.Encoding.UTF8, "application/json");
+
+                    // Send the POST request
+                    var response = await httpClient.PostAsync("api/employees/", content);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        // Extract the response content (the newly created employee)
+                        var responseData = await response.Content.ReadAsStringAsync();
+                        var createdEmployee = JsonConvert.DeserializeObject<Employee>(responseData);
+
+                        // Redirect to the Index action or another suitable action
+                        return RedirectToAction("Index");
+                    }
+                    else
+                    {
+                        // Handle the error response here if needed
+                        ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
+                    }
+                }
             }
-            catch
+            catch (Exception ex)
             {
-                return View();
+                // Log the exception and return the view with error message
+                ModelState.AddModelError(string.Empty, $"Exception: {ex.Message}");
             }
+
+            // If we got this far, something failed, re-display form
+            return View(employee);
         }
 
         // GET: Employee/Edit/5
