@@ -18,8 +18,8 @@ namespace WorkForce.Controllers
         {
             using (var httpClient = new HttpClient())
             {
-               httpClient.BaseAddress = new System.Uri(BaseApi);
-               httpClient.DefaultRequestHeaders.Clear();
+                httpClient.BaseAddress = new System.Uri(BaseApi);
+                httpClient.DefaultRequestHeaders.Clear();
                 httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 var response = await httpClient.GetAsync("api/employees");
 
@@ -30,7 +30,7 @@ namespace WorkForce.Controllers
                     var employees = Newtonsoft.Json.JsonConvert.DeserializeObject<IEnumerable<Employee>>(content);
                     return View(employees);
                 }
-                    return View();
+                return View();
             }
         }
 
@@ -42,7 +42,7 @@ namespace WorkForce.Controllers
                 httpClient.BaseAddress = new System.Uri("https://localhost:7075/");
                 httpClient.DefaultRequestHeaders.Clear();
                 httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                var response = await httpClient.GetAsync("api/employees/"+id);
+                var response = await httpClient.GetAsync("api/employees/" + id);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -107,19 +107,52 @@ namespace WorkForce.Controllers
         }
 
         // GET: Employee/Edit/5
-        public ActionResult Edit(int id)
+        public async Task<ActionResult> Edit(int id)
         {
-            return View();
+            using (var httpClient = new HttpClient())
+            {
+                httpClient.BaseAddress = new System.Uri("https://localhost:7075/");
+                httpClient.DefaultRequestHeaders.Clear();
+                httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                var response = await httpClient.GetAsync("api/employees/" + id);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    // Read the content of the response and deserialize it into a list of employees
+                    var content = await response.Content.ReadAsStringAsync();
+                    var employee = JsonConvert.DeserializeObject<Employee>(content);
+                    return View(employee);
+                }
+                return View();
+            }
         }
 
         // POST: Employee/Edit/5
         [HttpPost]
-        public ActionResult Edit(int id, FormCollection collection)
+        public async Task<ActionResult> Edit(int id, Employee employee)
         {
             try
             {
-                // TODO: Add update logic here
+                using (var httpClient = new HttpClient())
+                {
+                    httpClient.BaseAddress = new Uri(BaseApi);
+                    httpClient.DefaultRequestHeaders.Clear();
+                    httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
+                    var jsonContent = JsonConvert.SerializeObject(employee);
+                    var content = new StringContent(jsonContent, System.Text.Encoding.UTF8, "application/json");
+
+                    var response = await httpClient.PutAsync($"api/employees/{employee.Id}", content);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        return RedirectToAction("Index");
+                    }
+                    else
+                    {
+                        ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
+                    }
+                }
                 return RedirectToAction("Index");
             }
             catch
