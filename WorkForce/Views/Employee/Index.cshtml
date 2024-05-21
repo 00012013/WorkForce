@@ -1,0 +1,109 @@
+﻿@model IEnumerable<WorkForce.Models.Employee>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<style>
+    .table-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        .table th, .table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .table th {
+            background-color: #f2f2f2;
+        }
+
+    .btn {
+        display: inline-block;
+        padding: 6px 12px;
+        margin-bottom: 0;
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 1.42857143;
+        text-align: center;
+        white-space: nowrap;
+        vertical-align: middle;
+        cursor: pointer;
+        border: 1px solid transparent;
+        border-radius: 4px;
+    }
+
+    .btn-primary {
+        color: #fff;
+        background-color: #337ab7;
+        border-color: #2e6da4;
+    }
+
+    .btn-info {
+        color: #fff;
+        background-color: #5bc0de;
+        border-color: #46b8da;
+    }
+
+    .btn-danger {
+        color: #fff;
+        background-color: #d9534f;
+        border-color: #d43f3a;
+    }
+
+    .btn-sm {
+        padding: 5px 10px;
+        font-size: 12px;
+        line-height: 1.5;
+        border-radius: 3px;
+    }
+</style>
+
+
+<div class="table-container">
+    <h2>Employee List</h2>
+
+    <p>
+        <a href="@Url.Action("Create")" class="btn btn-primary">Create New</a>
+    </p>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-bordered">
+            <thead class="thead-dark">
+                <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Age</th>
+                    <th scope="col">Department</th>
+                    <th scope="col">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var employee in Model)
+                {
+                    <tr>
+                        <td>@Html.DisplayFor(modelItem => employee.Name)</td>
+                        <td>@Html.DisplayFor(modelItem => employee.Age)</td>
+                        <td>@Html.DisplayFor(modelItem => employee.Department.Name)</td>
+                        <td>
+                            <a href="@Url.Action("Edit", new { id = employee.Id })" class="btn btn-primary btn-sm">Edit</a>
+                            <a href="@Url.Action("Details", new { id = employee.Id })" class="btn btn-info btn-sm">Details</a>
+                            <a href="@Url.Action("Delete", new { id = employee.Id })" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this employee?');">Delete</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
